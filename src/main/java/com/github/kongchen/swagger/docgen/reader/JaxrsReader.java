@@ -19,6 +19,7 @@ import io.swagger.models.properties.Property;
 import io.swagger.models.properties.RefProperty;
 import io.swagger.util.ReflectionUtils;
 
+import java.lang.reflect.ParameterizedType;
 import org.apache.maven.plugin.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -255,6 +256,10 @@ public class JaxrsReader extends AbstractReader implements ClassSwaggerReader {
             LOGGER.debug("picking up response class from method " + method);
             Type t = method.getGenericReturnType();
             responseClass = method.getReturnType();
+            if (List.class.isAssignableFrom(responseClass) || Set.class.isAssignableFrom(responseClass)) {
+                responseContainer = "list";
+                responseClass = (Class) ((ParameterizedType) t).getActualTypeArguments()[0];
+            }
             if (!responseClass.equals(Void.class) && !responseClass.equals(void.class)
                     && (AnnotationUtils.findAnnotation(responseClass, Api.class) == null)) {
                 LOGGER.debug("reading model " + responseClass);
